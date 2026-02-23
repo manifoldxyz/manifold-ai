@@ -2,7 +2,27 @@
 
 > This is a complete mirror of the official SDK documentation at https://docs.manifold.xyz/client-sdk/
 > Source: https://manifold-1.gitbook.io/manifold-client-sdk/llms-full.txt
-> Use this as a fallback when the specific reference files don't cover your needs.
+> **Use this as a fallback only when the focused reference files don't cover your needs.**
+
+## Table of Contents (grep these headings to jump to sections)
+
+- `# Why Manifold Client SDK?` — Overview and value prop
+- `# Getting Started` — Installation, quick start, first product
+- `# Creating a React minting app` — RainbowKit + wagmi pattern
+- `# Advanced use cases` — Step-by-step transactions, ERC-20 pricing
+- `# Creating a minting bot` — Server-side headless minting
+- `# FAQ` — Supported networks, allowlists, error handling
+- `# [for AI agents and LLMS] Checklist` — LLM-specific guidelines
+- `# Release Notes` — SDK version history
+- `# Manifold Client` — createClient() API
+- `# getProduct` — Fetching products by ID/URL
+- `# Product` — Product object structure
+- `# Common` — Shared methods (purchase, getStatus, getAllocations, etc.)
+- `# Edition Product` — Edition-specific API
+- `# Blind Mint` — BlindMint-specific API
+- `# Public Provider Adapters` — Wagmi, Viem, Ethers v5 providers
+- `# Account Adapters` — Viem, Ethers v5 account adapters
+- `# Transaction Steps` — Multi-step execution
 
 ---
 

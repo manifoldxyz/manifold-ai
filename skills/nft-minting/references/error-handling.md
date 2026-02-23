@@ -1,8 +1,8 @@
-# Error Handling
-
-All SDK errors are thrown as `ClientSDKError` with typed error codes.
+# Error Handling & Common Pitfalls
 
 ## ClientSDKError
+
+All SDK errors use typed error codes:
 
 ```typescript
 import { ClientSDKError, ErrorCode } from '@manifoldxyz/client-sdk';
@@ -12,90 +12,40 @@ try {
   const result = await product.purchase({ account, preparedPurchase: prepared });
 } catch (error) {
   if (error instanceof ClientSDKError) {
-    switch (error.code) {
-      case ErrorCode.NOT_STARTED:
-        console.log('Sale hasn\'t started yet');
-        break;
-      case ErrorCode.ENDED:
-        console.log('Sale has ended');
-        break;
-      case ErrorCode.SOLD_OUT:
-        console.log('Sold out');
-        break;
-      case ErrorCode.NOT_ELIGIBLE:
-        console.log('Not eligible:', error.message);
-        break;
-      case ErrorCode.INSUFFICIENT_FUNDS:
-        console.log('Insufficient funds:', error.message);
-        break;
-      case ErrorCode.TRANSACTION_FAILED:
-        console.log('Transaction failed:', error.message);
-        // error.details may contain receipts from completed steps
-        break;
-      default:
-        console.log(`Error [${error.code}]: ${error.message}`);
-    }
-  } else {
-    console.error('Unexpected error:', error);
+    console.log(`[${error.code}] ${error.message}`);
+    console.log(error.details); // Additional context (varies by error)
   }
 }
 ```
 
 ## Error Codes
 
-### Validation Errors (from preparePurchase)
+### Validation (from preparePurchase)
 
-| Code | When | Recovery |
-|------|------|----------|
-| `INVALID_INPUT` | Bad address, quantity out of range, invalid instance ID | Fix the input |
-| `NOT_FOUND` | Instance ID doesn't exist | Verify the instance ID |
-| `UNSUPPORTED_PRODUCT_TYPE` | Product type not supported by SDK | Only Edition and BlindMint are supported |
-| `NOT_STARTED` | Sale start date hasn't been reached | Wait or show countdown |
-| `ENDED` | Sale end date has passed | Inform user |
-| `SOLD_OUT` | All supply minted | Inform user |
-| `NOT_ELIGIBLE` | Wallet not on allowlist / doesn't meet criteria | Check with different wallet |
-| `INSUFFICIENT_FUNDS` | Wallet balance too low | Add funds |
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| `INVALID_INPUT` | Bad address, quantity, or instance ID | Fix input |
+| `NOT_FOUND` | Instance ID doesn't exist | Verify ID |
+| `UNSUPPORTED_PRODUCT_TYPE` | Not Edition or BlindMint | SDK only supports these two |
+| `NOT_STARTED` | Sale start date not reached | Show countdown |
+| `ENDED` | Sale end date passed | Inform user |
+| `SOLD_OUT` | No supply remaining | Inform user |
+| `NOT_ELIGIBLE` | Not on allowlist / doesn't meet criteria | Try different wallet |
+| `INSUFFICIENT_FUNDS` | Balance too low | Add funds |
 
-### Transaction Errors (from purchase / step.execute)
+### Transaction (from purchase / step.execute)
 
-| Code | When | Recovery |
-|------|------|----------|
-| `TRANSACTION_FAILED` | On-chain transaction reverted | Check error details, retry |
-| `TRANSACTION_REVERTED` | Transaction was reverted by the EVM | Check contract state |
-| `TRANSACTION_REJECTED` | User rejected in wallet | Prompt user to try again |
-| `LEDGER_ERROR` | Ledger wallet issue | Enable blind signing on Ledger |
-| `API_ERROR` | Backend API call failed | Retry with backoff |
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| `TRANSACTION_FAILED` | On-chain revert | Check details, retry |
+| `TRANSACTION_REVERTED` | EVM revert | Check contract state |
+| `TRANSACTION_REJECTED` | User rejected in wallet | Prompt retry |
+| `LEDGER_ERROR` | Ledger wallet issue | Enable blind signing |
+| `API_ERROR` | Backend API failed | Retry with backoff |
 
-### Error Details
+For `TRANSACTION_FAILED`, `error.details` may include `receipts` from completed steps.
 
-`ClientSDKError` may include a `details` object with additional context:
-
-```typescript
-catch (error) {
-  if (error instanceof ClientSDKError) {
-    console.log(error.code);      // ErrorCode enum value
-    console.log(error.message);   // Human-readable message
-    console.log(error.details);   // Additional context (varies by error)
-
-    // For TRANSACTION_FAILED, details may include completed step receipts
-    if (error.code === ErrorCode.TRANSACTION_FAILED && error.details?.receipts) {
-      error.details.receipts.forEach((receipt) => {
-        console.log(`Completed step TX: ${receipt.txHash}`);
-      });
-    }
-  }
-}
-```
-
-## Best Practices
-
-1. **Always wrap purchase flows in try/catch** — both `preparePurchase` and `purchase` can throw
-2. **Check `getStatus()` before preparing** — avoids unnecessary RPC calls
-3. **Check `getAllocations()` before preparing** — gives user-friendly "not eligible" messages
-4. **Handle each error code explicitly** — don't just catch-all with a generic message
-5. **For bots: implement retry logic** — `API_ERROR` and `TRANSACTION_FAILED` may be transient
-
-## React Error Handling Pattern
+## React Error Pattern
 
 ```tsx
 const [error, setError] = useState<string | null>(null);
@@ -104,37 +54,106 @@ const handleMint = async () => {
   setError(null);
   try {
     const status = await product.getStatus();
-    if (status !== 'active') {
-      setError(`This drop is ${status}`);
-      return;
-    }
+    if (status !== 'active') { setError(`Drop is ${status}`); return; }
 
-    const allocations = await product.getAllocations({
-      recipientAddress: address,
-    });
-    if (!allocations.isEligible) {
-      setError(allocations.reason || 'Not eligible to mint');
-      return;
-    }
+    const alloc = await product.getAllocations({ recipientAddress: address });
+    if (!alloc.isEligible) { setError(alloc.reason || 'Not eligible'); return; }
 
     const prepared = await product.preparePurchase({
-      userAddress: address,
-      payload: { quantity: 1 },
-      account,
+      userAddress: address, payload: { quantity: 1 }, account,
     });
-
-    const result = await product.purchase({
-      account,
-      preparedPurchase: prepared,
-    });
-
-    console.log('Success:', result.transactionReceipt.txHash);
+    await product.purchase({ account, preparedPurchase: prepared });
   } catch (err) {
-    if (err instanceof ClientSDKError) {
-      setError(err.message);
-    } else {
-      setError('An unexpected error occurred');
-    }
+    setError(err instanceof ClientSDKError ? err.message : 'Unexpected error');
   }
 };
 ```
+
+## Common Pitfalls
+
+### Wrong parameter names
+
+```typescript
+// ❌ 'address' doesn't exist
+await product.preparePurchase({ address: '0x...', payload: { quantity: 1 } });
+
+// ✅ Use 'userAddress' (payer) + optional 'recipientAddress' (receiver)
+await product.preparePurchase({ userAddress: '0x...', payload: { quantity: 1 } });
+```
+
+### Wrong return shape from purchase()
+
+```typescript
+// ❌ No .receipts array
+const txHash = order.receipts[0]?.txHash;
+
+// ✅ Direct properties
+const txHash = result.transactionReceipt.txHash;
+const order = result.order; // minted token details
+```
+
+### Missing type guards
+
+```typescript
+// ❌ Unsafe cast
+const prepared = await (product as EditionProduct).preparePurchase({ ... });
+
+// ✅ Guard first
+if (isEditionProduct(product)) {
+  const prepared = await product.preparePurchase({ ... });
+}
+```
+
+### Provider factory takes a Record, not a single client
+
+```typescript
+// ❌ Wrong
+const publicProvider = createPublicProviderViem(publicClient);
+
+// ✅ Pass Record<chainId, PublicClient>
+const publicProvider = createPublicProviderViem({ [chainId]: publicClient });
+```
+
+### Account is not passed to createClient
+
+```typescript
+// ❌ createClient doesn't take account
+const client = createClient({ publicProvider, account });
+
+// ✅ Account goes to preparePurchase and purchase
+const client = createClient({ publicProvider });
+```
+
+### Gas buffer is a multiplier, not a percentage
+
+```typescript
+// ❌ 25 means 2500% buffer
+gasBuffer: { multiplier: 25 }
+
+// ✅ 0.25 means 25% above estimate
+gasBuffer: { multiplier: 0.25 }
+```
+
+### Next.js: SDK requires 'use client'
+
+```tsx
+'use client'; // Required — SDK needs browser/wallet APIs
+import { createClient } from '@manifoldxyz/client-sdk';
+```
+
+### Private keys: server-only
+
+```typescript
+// ❌ Exposed to browser
+const key = process.env.NEXT_PUBLIC_PRIVATE_KEY;
+
+// ✅ Server-only env var (no NEXT_PUBLIC_ prefix)
+const key = process.env.WALLET_PRIVATE_KEY;
+```
+
+## Authoritative Sources
+
+When in doubt, verify against:
+- SDK docs: https://docs.manifold.xyz/client-sdk/
+- LLM docs: https://manifold-1.gitbook.io/manifold-client-sdk/llms-full.txt
+- SDK source: https://github.com/manifoldxyz/client-sdk

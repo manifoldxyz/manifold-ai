@@ -1,200 +1,105 @@
-# Building a Minting Bot
+# Minting Bot
 
-Headless server-side minting using a private key. No browser required.
+Headless server-side minting with a private key. No browser required.
 
 **Official examples:**
 - [Edition bot](https://github.com/manifoldxyz/client-sdk/tree/main/packages/examples/edition/minting-bot)
 - [Blind Mint bot](https://github.com/manifoldxyz/client-sdk/tree/main/packages/examples/blindmint/minting-bot)
 
-## Project Setup
+## Dependencies
 
 ```bash
-mkdir my-mint-bot && cd my-mint-bot
-npm init -y
-npm install @manifoldxyz/client-sdk dotenv
-npm install -D typescript tsx @types/node
-npx tsc --init
+npm install @manifoldxyz/client-sdk dotenv viem
+# or for ethers v5: npm install @manifoldxyz/client-sdk dotenv ethers@5
 ```
 
-Create `.env`:
+## Environment Variables
 
 ```env
 INSTANCE_ID=your_instance_id
 NETWORK_ID=11155111
 RPC_URL=https://eth-sepolia.g.alchemy.com/v2/YOUR_KEY
-WALLET_PRIVATE_KEY=your_private_key_here
+WALLET_PRIVATE_KEY=your_private_key
 MINT_QUANTITY=1
 ```
 
-## Using Viem (Recommended)
-
-Create `src/index.ts`:
+## Complete Bot (Viem)
 
 ```typescript
 import 'dotenv/config';
 import {
-  createClient,
-  createAccountViem,
-  createPublicProviderViem,
-  isEditionProduct,
-  isBlindMintProduct,
+  createClient, createAccountViem, createPublicProviderViem,
+  isEditionProduct, isBlindMintProduct,
 } from '@manifoldxyz/client-sdk';
 import { createPublicClient, createWalletClient, http } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { sepolia } from 'viem/chains';
 
-function getEnv(name: string): string {
-  const value = process.env[name];
-  if (!value) throw new Error(`Missing env: ${name}`);
-  return value;
-}
-
 async function main() {
-  const instanceId = getEnv('INSTANCE_ID');
-  const rpcUrl = getEnv('RPC_URL');
-  const networkId = Number(getEnv('NETWORK_ID'));
-  const privateKey = getEnv('WALLET_PRIVATE_KEY');
+  const networkId = Number(process.env.NETWORK_ID!);
+  const rpcUrl = process.env.RPC_URL!;
   const quantity = Number(process.env.MINT_QUANTITY ?? '1');
 
-  // Setup provider
-  const publicClient = createPublicClient({
-    chain: sepolia,
-    transport: http(rpcUrl),
+  // Setup
+  const publicProvider = createPublicProviderViem({
+    [networkId]: createPublicClient({ chain: sepolia, transport: http(rpcUrl) }),
   });
-  const publicProvider = createPublicProviderViem({ [networkId]: publicClient });
   const client = createClient({ publicProvider });
 
-  // Fetch product
-  console.log(`📦 Fetching product ${instanceId}...`);
-  const product = await client.getProduct(instanceId);
-
+  // Fetch + validate
+  const product = await client.getProduct(process.env.INSTANCE_ID!);
   if (!isEditionProduct(product) && !isBlindMintProduct(product)) {
     throw new Error('Unsupported product type');
   }
 
-  // Check status
   const status = await product.getStatus();
-  if (status !== 'active') {
-    throw new Error(`Product is ${status}`);
-  }
+  if (status !== 'active') throw new Error(`Product is ${status}`);
 
-  // Setup wallet
-  const key = privateKey.startsWith('0x') ? privateKey : `0x${privateKey}`;
-  const wallet = privateKeyToAccount(key as `0x${string}`);
+  // Wallet
+  const key = process.env.WALLET_PRIVATE_KEY!;
+  const wallet = privateKeyToAccount((key.startsWith('0x') ? key : `0x${key}`) as `0x${string}`);
   const walletClient = createWalletClient({
-    account: wallet,
-    chain: sepolia,
-    transport: http(rpcUrl),
+    account: wallet, chain: sepolia, transport: http(rpcUrl),
   });
   const account = createAccountViem({ walletClient });
   const address = await account.getAddress();
-  console.log(`👤 Wallet: ${address}`);
 
   // Check eligibility
-  const allocations = await product.getAllocations({ recipientAddress: address });
-  if (!allocations.isEligible) {
-    throw new Error(allocations.reason || 'Not eligible');
-  }
+  const alloc = await product.getAllocations({ recipientAddress: address });
+  if (!alloc.isEligible) throw new Error(alloc.reason || 'Not eligible');
 
-  // Prepare
-  console.log('🧪 Preparing purchase...');
+  // Prepare + execute
   const prepared = await product.preparePurchase({
-    userAddress: address,
-    payload: { quantity },
-    account,
+    userAddress: address, payload: { quantity }, account,
   });
+  console.log(`Cost: ${prepared.cost.total.native.formatted}`);
 
-  const cost = prepared.cost.total.native;
-  console.log(`💰 Cost: ${cost.formatted} (~$${prepared.cost.totalUSD})`);
-  console.log(`📋 Steps: ${prepared.steps.length}`);
+  const result = await product.purchase({ account, preparedPurchase: prepared });
+  console.log(`TX: ${result.transactionReceipt.txHash}`);
 
-  // Execute
-  console.log('🚀 Executing purchase...');
-  const result = await product.purchase({
-    account,
-    preparedPurchase: prepared,
+  result.order?.items.forEach((item, i) => {
+    console.log(`Token ${i + 1}: #${item.token.tokenId} x${item.quantity}`);
   });
-
-  console.log(`🎉 TX: ${result.transactionReceipt.txHash}`);
-
-  if (result.order) {
-    result.order.items.forEach((item, i) => {
-      console.log(`   Token ${i + 1}: #${item.token.tokenId} x${item.quantity}`);
-    });
-  }
 }
 
-main().catch((error) => {
-  console.error('❌ Failed:', error.message);
-  process.exit(1);
-});
+main().catch((e) => { console.error('Failed:', e.message); process.exit(1); });
 ```
 
-Run: `npx tsx src/index.ts`
+## Ethers v5 Variant
 
-## Using Ethers v5
+Replace the setup and wallet sections:
 
 ```typescript
-import 'dotenv/config';
-import {
-  createClient,
-  createAccountEthers5,
-  createPublicProviderEthers5,
-  isEditionProduct,
-} from '@manifoldxyz/client-sdk';
+import { createPublicProviderEthers5, createAccountEthers5 } from '@manifoldxyz/client-sdk';
 import { ethers } from 'ethers';
 
-async function main() {
-  const rpcUrl = process.env.RPC_URL!;
-  const networkId = Number(process.env.NETWORK_ID!);
-
-  const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
-  const publicProvider = createPublicProviderEthers5({ [networkId]: provider });
-  const client = createClient({ publicProvider });
-
-  const product = await client.getProduct(process.env.INSTANCE_ID!);
-  if (!isEditionProduct(product)) throw new Error('Not an edition');
-
-  const wallet = new ethers.Wallet(process.env.WALLET_PRIVATE_KEY!, provider);
-  const account = createAccountEthers5({ wallet });
-  const address = await wallet.getAddress();
-
-  const prepared = await product.preparePurchase({
-    userAddress: address,
-    payload: { quantity: 1 },
-    account,
-  });
-
-  const result = await product.purchase({
-    account,
-    preparedPurchase: prepared,
-  });
-
-  console.log(`TX: ${result.transactionReceipt.txHash}`);
-}
-
-main().catch(console.error);
+const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+const publicProvider = createPublicProviderEthers5({ [networkId]: provider });
+const wallet = new ethers.Wallet(process.env.WALLET_PRIVATE_KEY!, provider);
+const account = createAccountEthers5({ wallet });
 ```
 
-## Package.json Scripts
-
-```json
-{
-  "scripts": {
-    "start": "tsx src/index.ts",
-    "dev": "tsx watch src/index.ts"
-  }
-}
-```
-
-## Best Practices
-
-- **Never commit private keys** — use `.env` files and add `.env` to `.gitignore`
-- **Test on Sepolia first** — use testnet before mainnet
-- **Implement retry logic** — network errors can be transient
-- **Monitor gas prices** — for mainnet, check gas before sending
-- **Log everything** — transaction hashes, errors, timestamps
-- **Handle graceful shutdown** — don't leave pending transactions
+The rest of the flow (getProduct → getStatus → preparePurchase → purchase) is identical.
 
 ## Retry Pattern
 
@@ -202,19 +107,23 @@ main().catch(console.error);
 async function mintWithRetry(maxRetries = 3) {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      const result = await product.purchase({ account, preparedPurchase: prepared });
-      return result;
+      return await product.purchase({ account, preparedPurchase: prepared });
     } catch (error) {
-      if (error instanceof ClientSDKError) {
-        // Don't retry validation errors
-        if ([ErrorCode.SOLD_OUT, ErrorCode.ENDED, ErrorCode.NOT_ELIGIBLE].includes(error.code)) {
-          throw error;
-        }
+      // Don't retry terminal errors
+      if (error instanceof ClientSDKError &&
+          [ErrorCode.SOLD_OUT, ErrorCode.ENDED, ErrorCode.NOT_ELIGIBLE].includes(error.code)) {
+        throw error;
       }
       if (attempt === maxRetries) throw error;
-      console.log(`Attempt ${attempt} failed, retrying in ${attempt * 2}s...`);
       await new Promise((r) => setTimeout(r, attempt * 2000));
     }
   }
 }
 ```
+
+## Best Practices
+
+- **Never commit private keys** — `.env` + `.gitignore`
+- **Test on Sepolia first** — switch to mainnet when ready
+- **Implement retry logic** — network errors are transient
+- **Log transaction hashes** — for debugging and auditing
