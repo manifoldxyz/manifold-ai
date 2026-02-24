@@ -8,7 +8,7 @@ AI agent skills for building with [Manifold](https://manifold.xyz) — the marke
 
 Build custom NFT minting experiences using the [`@manifoldxyz/client-sdk`](https://github.com/manifoldxyz/client-sdk). Covers:
 
-- **Campaign setup guidance** — pick the right Manifold product type and deploy via Studio
+- **Campaign setup guidance** — pick the right Manifold product type and deploy via [Studio](https://studio.manifold.xyz/)
 - **Custom minting websites** — React/Next.js apps with wallet connect and mint flows
 - **Minting bots** — headless server-side scripts for automated minting
 - **SDK integration** — add minting to existing projects with any wallet library (ethers v5, viem, wagmi)
