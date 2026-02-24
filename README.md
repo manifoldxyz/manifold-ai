@@ -1,6 +1,6 @@
 # manifold-ai
 
-AI agent skills for building with [Manifold](https://manifold.xyz) — the creator-owned NFT platform.
+AI agent skills for building with [Manifold](https://manifold.xyz) — the marketplace of ideas.
 
 ## Available Skills
 
@@ -13,7 +13,7 @@ Build custom NFT minting experiences using the [`@manifoldxyz/client-sdk`](https
 - **Minting bots** — headless server-side scripts for automated minting
 - **SDK integration** — add minting to existing projects with any wallet library (ethers v5, viem, wagmi)
 
-Supports all Manifold chains: Ethereum, Base, Optimism, Shape, Sepolia, and ApeChain.
+Supports all Manifold chains: Ethereum, Base, Optimism, Shape, and Sepolia(testnet).
 
 ## Installation
 
