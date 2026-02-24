@@ -1,6 +1,6 @@
 ---
 name: nft-minting
-description: "Build NFT minting experiences with Manifold's client-sdk. Guides agents through campaign setup, custom minting websites (React/Next.js), minting bots (Node.js), and SDK integration into existing projects. Supports Edition and Blind Mint products across Ethereum, Base, Optimism, Shape, Sepolia, and ApeChain. Use when building minting pages, mint bots, integrating Manifold NFT products, or helping users set up Manifold campaigns. NOT for deploying smart contracts, managing Manifold Studio settings, or non-minting blockchain operations."
+description: "Build NFT minting experiences with Manifold's client-sdk. Guides agents through campaign setup, custom minting websites (React/Next.js), minting bots (Node.js), and SDK integration into existing projects. Supports [`Edition`](https://docs.manifold.xyz/client-sdk/sdk/product/edition-product) and [`Blind Mint`](https://docs.manifold.xyz/client-sdk/sdk/product/blind-mint) products across Ethereum, Base, Optimism, Shape, Sepolia, and ApeChain. Use when building minting pages, mint bots, integrating Manifold NFT products, or helping users set up Manifold campaigns. NOT for deploying smart contracts, managing Manifold Studio settings, or non-minting blockchain operations."
 ---
 
 # Manifold NFT Minting Skill
