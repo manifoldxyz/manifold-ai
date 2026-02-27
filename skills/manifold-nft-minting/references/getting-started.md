@@ -30,6 +30,25 @@ const client = createClient({ publicProvider });
 
 ### Provider Setup (pick one)
 
+> **Recommendation:** Prefer **viem** for new projects. Use wagmi if building a React app with RainbowKit or similar wallet UI. Only use ethers v5 if integrating into an existing ethers codebase.
+
+#### With Viem (recommended)
+
+```typescript
+import { createClient, createPublicProviderViem } from '@manifoldxyz/client-sdk';
+import { createPublicClient, http } from 'viem';
+import { mainnet } from 'viem/chains';
+
+const publicClient = createPublicClient({
+  chain: mainnet,
+  transport: http('YOUR_RPC_URL'),
+  // Or use public RPC (rate-limited): transport: http()
+});
+
+const publicProvider = createPublicProviderViem({ 1: publicClient });
+const client = createClient({ publicProvider });
+```
+
 #### With Wagmi (React apps)
 
 ```typescript
@@ -42,6 +61,7 @@ const config = createConfig({
   transports: {
     [mainnet.id]: http('YOUR_MAINNET_RPC_URL'),
     [base.id]: http('YOUR_BASE_RPC_URL'),
+    // Or use public RPC (rate-limited): http()
   },
 });
 
@@ -49,23 +69,7 @@ const publicProvider = createPublicProviderWagmi({ config });
 const client = createClient({ publicProvider });
 ```
 
-#### With Viem
-
-```typescript
-import { createClient, createPublicProviderViem } from '@manifoldxyz/client-sdk';
-import { createPublicClient, http } from 'viem';
-import { mainnet } from 'viem/chains';
-
-const publicClient = createPublicClient({
-  chain: mainnet,
-  transport: http('YOUR_RPC_URL'),
-});
-
-const publicProvider = createPublicProviderViem({ 1: publicClient });
-const client = createClient({ publicProvider });
-```
-
-#### With Ethers v5
+#### With Ethers v5 (legacy)
 
 ```typescript
 import { createClient, createPublicProviderEthers5 } from '@manifoldxyz/client-sdk';

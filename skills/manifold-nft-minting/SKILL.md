@@ -42,15 +42,55 @@ Ask: **"Do you already have a Manifold product/campaign deployed with an instanc
 Ask: **"Do you have an existing project to add minting to, or building from scratch?"**
 
 **Existing project:**
-1. Ask their framework and wallet library (wagmi, viem, ethers v5)
-2. Read `references/getting-started.md` + `references/adapters.md`
-3. Match adapter setup to their stack — integrate, don't scaffold
+1. Ask their framework
+2. Ask if they already have a wallet connection library set up (e.g., RainbowKit, Web3Modal, ConnectKit, custom)
+   - **Yes, already set up** → Ask which library they use. Read `references/getting-started.md` + `references/adapters.md`. Match adapter setup to their stack — integrate, don't scaffold.
+   - **No wallet connection yet** → Proceed to Step 2a
+3. Proceed to Step 2b (RPC setup)
 
 **From scratch:**
 1. Ask what they're building:
-   - **Web minting page** → Read `references/react-minting-app.md`
-   - **Server-side bot** → Read `references/minting-bot.md`
-   - **Data query script** → Read `references/getting-started.md` only
+   - **Web minting page** → Proceed to Step 2a (Wallet Connection), then Step 2b (RPC Setup)
+   - **Server-side bot** → Read `references/minting-bot.md`. Proceed to Step 2b (RPC Setup)
+   - **Data query script** → Read `references/getting-started.md` only. Proceed to Step 2b (RPC Setup)
+
+### Step 2a: Wallet connection (web apps only)
+
+Ask: **"Would you like to use [RainbowKit](https://www.rainbowkit.com/) for wallet connection? It's the most common choice for React/Next.js minting apps."**
+
+**RainbowKit (yes):**
+1. Use `WebFetch` to read RainbowKit documentation before writing any code:
+   - `https://rainbowkit.com/docs/installation`
+   - `https://rainbowkit.com/docs/connect-button`
+2. Read `references/react-minting-app.md` + `references/getting-started.md` + `references/networks.md` + `references/adapters.md`
+3. Follow RainbowKit's setup patterns for wagmi config, providers, and `<ConnectButton />`
+
+**Other library (no):**
+1. Ask: **"Which wallet connection library would you like to use?"** (e.g., Web3Modal, ConnectKit, Dynamic, Privy, custom)
+2. Ask: **"Can you provide the documentation URL for that library so I can follow it correctly?"**
+3. Use `WebFetch` to read their provided documentation URL
+4. Read `references/getting-started.md` + `references/networks.md` + `references/adapters.md`
+5. Adapt the SDK integration to work with their chosen wallet library instead of RainbowKit
+
+### Step 2b: RPC node setup
+
+Ask: **"Do you have an RPC node URL you can provide (e.g., from Alchemy, Infura, QuickNode)?"**
+
+**Yes** → Use their RPC URL in configuration. Proceed to Step 3.
+
+**No, but willing to set one up** → Use `WebFetch` to read `https://www.alchemy.com/overviews/rpc-node` and guide them through creating an Alchemy account and getting an RPC endpoint. Proceed to Step 3.
+
+**No, skip (use public RPC)** → Use viem's built-in public transport. In code, use `http()` with no URL argument:
+
+```typescript
+import { http } from 'viem';
+// Public RPC — no URL needed
+transport: http()
+```
+
+> **Note:** Public RPCs have rate limits and may be slower. Recommend upgrading to a dedicated RPC for production apps.
+
+Proceed to Step 3.
 
 ### Step 3: Implement product interaction
 
@@ -68,7 +108,10 @@ Ask: **"Do you have an existing project to add minting to, or building from scra
 
 ## Rules
 
+- **Prefer viem over ethers** for new projects. Only use ethers v5 if the user explicitly requests it or has an existing ethers codebase.
 - **Never fabricate SDK method signatures or field names.** Verify against references.
+- **Always confirm wallet connection choice** before scaffolding a web minting app. Never assume RainbowKit.
+- **Always read wallet library docs** before writing integration code — RainbowKit docs via WebFetch, or user-provided docs for other libraries.
 - **Always use type guards** before accessing product-specific methods.
 - **Always check `getStatus()`** before purchases.
 - **Use `preparePurchase` → `purchase`** for simple flows. Manual `step.execute()` only for granular UI control.

@@ -13,22 +13,32 @@
 
 ## Multi-Chain Provider Setup
 
-### Viem
+> **Recommendation:** Prefer **viem** for new projects. Use wagmi if building a React app with a wallet connection library. Only use ethers v5 for existing ethers codebases.
+
+### Viem (recommended)
 
 ```typescript
 import { createPublicProviderViem } from '@manifoldxyz/client-sdk';
 import { createPublicClient, http } from 'viem';
 import { mainnet, base, optimism, sepolia } from 'viem/chains';
 
+// With dedicated RPC URLs (recommended for production)
 const publicProvider = createPublicProviderViem({
   [mainnet.id]: createPublicClient({ chain: mainnet, transport: http(MAINNET_RPC) }),
   [base.id]: createPublicClient({ chain: base, transport: http(BASE_RPC) }),
   [optimism.id]: createPublicClient({ chain: optimism, transport: http(OPTIMISM_RPC) }),
   [sepolia.id]: createPublicClient({ chain: sepolia, transport: http(SEPOLIA_RPC) }),
 });
+
+// With public RPC fallback (rate-limited, OK for development)
+const publicProviderPublic = createPublicProviderViem({
+  [mainnet.id]: createPublicClient({ chain: mainnet, transport: http() }),
+  [base.id]: createPublicClient({ chain: base, transport: http() }),
+  [sepolia.id]: createPublicClient({ chain: sepolia, transport: http() }),
+});
 ```
 
-### Wagmi
+### Wagmi (React apps)
 
 ```typescript
 import { createConfig, http } from '@wagmi/core';
@@ -37,15 +47,15 @@ import { mainnet, base, optimism, sepolia } from '@wagmi/core/chains';
 const config = createConfig({
   chains: [mainnet, base, optimism, sepolia],
   transports: {
-    [mainnet.id]: http(MAINNET_RPC),
-    [base.id]: http(BASE_RPC),
-    [optimism.id]: http(OPTIMISM_RPC),
-    [sepolia.id]: http(SEPOLIA_RPC),
+    [mainnet.id]: http(MAINNET_RPC),   // or http() for public RPC
+    [base.id]: http(BASE_RPC),         // or http() for public RPC
+    [optimism.id]: http(OPTIMISM_RPC), // or http() for public RPC
+    [sepolia.id]: http(SEPOLIA_RPC),   // or http() for public RPC
   },
 });
 ```
 
-### Ethers v5
+### Ethers v5 (legacy)
 
 ```typescript
 import { createPublicProviderEthers5 } from '@manifoldxyz/client-sdk';
