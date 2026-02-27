@@ -4,7 +4,7 @@ AI agent skills for building with [Manifold](https://manifold.xyz) — the marke
 
 ## Available Skills
 
-### nft-minting
+### manifold-nft-minting
 
 Build custom NFT minting experiences using the [`@manifoldxyz/client-sdk`](https://github.com/manifoldxyz/client-sdk). Covers:
 
@@ -24,7 +24,7 @@ npx skills add manifoldxyz/manifold-ai
 Install a specific skill:
 
 ```bash
-npx skills add manifoldxyz/manifold-ai --skill nft-minting
+npx skills add manifoldxyz/manifold-ai --skill manifold-nft-minting
 ```
 
 Install for a specific agent:
