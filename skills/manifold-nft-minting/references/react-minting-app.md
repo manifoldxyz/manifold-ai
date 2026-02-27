@@ -1,4 +1,6 @@
-# React Minting App
+# React Minting App (RainbowKit)
+
+> **Note:** This reference assumes RainbowKit for wallet connection. If the user chose a different wallet library, adapt the wallet connection parts (providers, ConnectButton, wagmi config) to match their library's patterns. The Manifold SDK integration (MintButton, product queries) remains the same regardless of wallet library.
 
 Build a minting page with Next.js + RainbowKit + wagmi.
 

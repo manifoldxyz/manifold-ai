@@ -7,7 +7,36 @@ The SDK separates read operations (Public Provider) from write operations (Accou
 
 ## Setup by Library
 
-### Wagmi (React apps)
+> **Recommendation:** Prefer **viem** for new projects. Use wagmi for React apps with wallet connection libraries. Only use ethers v5 for existing ethers codebases.
+
+### Viem (recommended — server-side or custom setup)
+
+```typescript
+import { createClient, createPublicProviderViem, createAccountViem } from '@manifoldxyz/client-sdk';
+import { createPublicClient, createWalletClient, http } from 'viem';
+import { privateKeyToAccount } from 'viem/accounts';
+import { base } from 'viem/chains';
+
+// Provider: pass Record<chainId, PublicClient>
+const publicProvider = createPublicProviderViem({
+  [base.id]: createPublicClient({
+    chain: base,
+    transport: http('YOUR_RPC'), // or http() for public RPC
+  }),
+});
+const client = createClient({ publicProvider });
+
+// Account: from private key or browser wallet
+const wallet = privateKeyToAccount('0xPRIVATE_KEY' as `0x${string}`);
+const walletClient = createWalletClient({
+  account: wallet,
+  chain: base,
+  transport: http('YOUR_RPC'), // or http() for public RPC
+});
+const account = createAccountViem({ walletClient });
+```
+
+### Wagmi (React apps with wallet connection libraries)
 
 ```typescript
 import { createClient, createPublicProviderWagmi, createAccountViem } from '@manifoldxyz/client-sdk';
@@ -31,37 +60,13 @@ const account = createAccountViem({ walletClient });
 const config = createConfig({
   chains: [mainnet, base],
   transports: {
-    [mainnet.id]: http('YOUR_MAINNET_RPC'),
-    [base.id]: http('YOUR_BASE_RPC'),
+    [mainnet.id]: http('YOUR_MAINNET_RPC'), // or http() for public RPC
+    [base.id]: http('YOUR_BASE_RPC'),       // or http() for public RPC
   },
 });
 ```
 
-### Viem (server-side or custom setup)
-
-```typescript
-import { createClient, createPublicProviderViem, createAccountViem } from '@manifoldxyz/client-sdk';
-import { createPublicClient, createWalletClient, http } from 'viem';
-import { privateKeyToAccount } from 'viem/accounts';
-import { base } from 'viem/chains';
-
-// Provider: pass Record<chainId, PublicClient>
-const publicProvider = createPublicProviderViem({
-  [base.id]: createPublicClient({ chain: base, transport: http('YOUR_RPC') }),
-});
-const client = createClient({ publicProvider });
-
-// Account: from private key or browser wallet
-const wallet = privateKeyToAccount('0xPRIVATE_KEY' as `0x${string}`);
-const walletClient = createWalletClient({
-  account: wallet,
-  chain: base,
-  transport: http('YOUR_RPC'),
-});
-const account = createAccountViem({ walletClient });
-```
-
-### Ethers v5
+### Ethers v5 (legacy)
 
 ```typescript
 import { createClient, createPublicProviderEthers5, createAccountEthers5 } from '@manifoldxyz/client-sdk';
@@ -81,10 +86,10 @@ const account = createAccountEthers5({ wallet });
 
 | Scenario | Provider | Account |
 |----------|---------|---------|
-| React + wagmi/RainbowKit | `createPublicProviderWagmi` | `createAccountViem` + `useWalletClient()` |
-| Server bot (modern) | `createPublicProviderViem` | `createAccountViem` + `privateKeyToAccount` |
-| Server bot (legacy ethers) | `createPublicProviderEthers5` | `createAccountEthers5` + `ethers.Wallet` |
+| Server bot / scripts (recommended) | `createPublicProviderViem` | `createAccountViem` + `privateKeyToAccount` |
+| React + wagmi + wallet library | `createPublicProviderWagmi` | `createAccountViem` + `useWalletClient()` |
 | Existing viem app | `createPublicProviderViem` | `createAccountViem` |
+| Existing ethers v5 app | `createPublicProviderEthers5` | `createAccountEthers5` + `ethers.Wallet` |
 
 ## Multi-Chain Provider
 
