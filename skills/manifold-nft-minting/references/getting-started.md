@@ -51,6 +51,8 @@ const client = createClient({ publicProvider });
 
 #### With Wagmi (React apps)
 
+> **Important:** If using RainbowKit, you must use wagmi 2.x (`wagmi@^2.9.0`). wagmi 3.x is NOT compatible with RainbowKit.
+
 ```typescript
 import { createClient, createPublicProviderWagmi } from '@manifoldxyz/client-sdk';
 import { createConfig, http } from '@wagmi/core';

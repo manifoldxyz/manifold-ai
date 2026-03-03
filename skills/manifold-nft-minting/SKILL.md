@@ -108,6 +108,7 @@ Proceed to Step 3.
 
 ## Rules
 
+- **RainbowKit requires wagmi 2.x (NOT 3.x).** When using RainbowKit, always install `wagmi@^2.9.0`. wagmi 3.x is incompatible with RainbowKit and will cause build/runtime errors. This is critical — never install wagmi without pinning to `^2.9.0` in RainbowKit projects.
 - **Prefer viem over ethers** for new projects. Only use ethers v5 if the user explicitly requests it or has an existing ethers codebase.
 - **Never fabricate SDK method signatures or field names.** Verify against references.
 - **Always confirm wallet connection choice** before scaffolding a web minting app. Never assume RainbowKit.
