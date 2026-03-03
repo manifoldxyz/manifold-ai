@@ -7,7 +7,6 @@ The SDK supports two product types, with more planned.
 ```typescript
 enum AppType {
   EDITION = 'edition',       // Fixed/open edition NFTs
-  BURN_REDEEM = 'burn-redeem', // (defined but not yet implemented in SDK)
   BLIND_MINT = 'blind-mint', // Mystery/gacha-style random NFTs
 }
 ```

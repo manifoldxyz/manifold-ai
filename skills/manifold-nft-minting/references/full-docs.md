@@ -116,7 +116,7 @@ console.log(`Edition purchase transaction: ${txHash}`);
 
 ## Create your first product
 
-Head over to [Manifold Studio](https://studio.manifold.xyz/) to [create your first product](https://help.manifold.xyz/en/collections/9493376-your-create-menu). The SDK currently supports [Edition](https://help.manifold.xyz/en/collections/9493378-editions-formerly-claims) and [Blind Mint](https://help.manifold.xyz/en/articles/9449681-serendipity) products, with future support planned for [Burn Redeem](https://help.manifold.xyz/en/articles/9387352-create-a-burn-redeem-campaign).
+Head over to [Manifold Studio](https://studio.manifold.xyz/) to [create your first product](https://help.manifold.xyz/en/collections/9493376-your-create-menu). The SDK currently supports [Edition](https://help.manifold.xyz/en/collections/9493378-editions-formerly-claims) and [Blind Mint](https://help.manifold.xyz/en/articles/9449681-serendipity) products, with more product types planned for the future.
 
 1. Visit [studio.manifold.xyz](https://studio.manifold.xyz/) and sign in.
 2. Navigate to the [Create+ Menu](https://help.manifold.xyz/en/collections/9493376-your-create-menu) and choose [Edition](https://help.manifold.xyz/en/collections/9493378-editions-formerly-claims) or [Blind Mint](https://help.manifold.xyz/en/articles/9449681-serendipity) .
@@ -1097,7 +1097,7 @@ Calling [getProduct](https://manifoldxyz.gitbook.io/manifold-client-sdk/sdk/mani
 | data        | [InstanceData](https://manifoldxyz.gitbook.io/manifold-client-sdk/reference/instancedata) | ✅        | Product offchain data              |
 | previewData | [PreviewData](https://manifoldxyz.gitbook.io/manifold-client-sdk/reference/previewdata)   | ✅        | Return preview data of the product |
 
-Product instances are created based on their specific type (**Edition**, **Burn/Redeem**, or **Blind Mint**). Each specialization adds additional methods and type guards while preserving the shared core API.
+Product instances are created based on their specific type (**Edition** or **Blind Mint**). Each specialization adds additional methods and type guards while preserving the shared core API.
 
 
 # Common
@@ -1325,7 +1325,7 @@ Simulates a purchase to check eligibility and calculate the total cost.
 
 #### Parameters
 
-<table><thead><tr><th width="182.84375">Parameter</th><th width="181.56640625">Type</th><th width="97.63671875">Required</th><th>Description</th></tr></thead><tbody><tr><td>userAddress</td><td>string</td><td>✅</td><td>The address making the purchase</td></tr><tr><td>recipientAddress</td><td>string</td><td>❌</td><td>If different than <code>address</code></td></tr><tr><td>networkId</td><td>number</td><td>❌</td><td>If specify, forced transaction on the network (handle funds bridging automatically), assume product network otherwise</td></tr><tr><td>payload</td><td>{quantity: number}</td><td>✅</td><td>Specific to Edition Products. Specify quantity of purchase</td></tr><tr><td><strong>gasBuffer</strong></td><td>object</td><td>❌</td><td>How much additional gas to spend on the purchase</td></tr><tr><td>gasBuffer.fixed</td><td>BigInt</td><td>❌</td><td>Fixed gas buffer amount</td></tr><tr><td>gasBuffer.multipller</td><td>number</td><td>❌</td><td><p>Gas buffer by multiplier. </p><p>The multiplier represents a percentage (as a number out of 100). For example:</p><ul><li>multiplier: 120 means 120% of the original estimate (20% increase)</li><li>multiplier: 150 means 150% of the original estimate (50% increase)</li></ul></td></tr><tr><td>account</td><td><a href="https://app.gitbook.com/o/FkM3zqPi1O0VypWXgiUZ/s/wX9Yl8DLygpenDBVWGPF/~/changes/1/references/account">Account</a></td><td>❌</td><td>If provided, it will perform balance checks on the specified account; otherwise, it will skip balance checks.</td></tr></tbody></table>
+<table><thead><tr><th width="182.84375">Parameter</th><th width="181.56640625">Type</th><th width="97.63671875">Required</th><th>Description</th></tr></thead><tbody><tr><td>userAddress</td><td>string</td><td>✅</td><td>The address making the purchase</td></tr><tr><td>recipientAddress</td><td>string</td><td>❌</td><td>If different than <code>address</code></td></tr><tr><td>networkId</td><td>number</td><td>❌</td><td>If specify, forced transaction on the network (handle funds bridging automatically), assume product network otherwise</td></tr><tr><td>payload</td><td>{quantity: number}</td><td>✅</td><td>Specific to Edition Products. Specify quantity of purchase</td></tr><tr><td><strong>gasBuffer</strong></td><td>object</td><td>❌</td><td>How much additional gas to spend on the purchase</td></tr><tr><td>gasBuffer.fixed</td><td>BigInt</td><td>❌</td><td>Fixed gas buffer amount</td></tr><tr><td>gasBuffer.multiplier</td><td>number</td><td>❌</td><td><p>Gas buffer by multiplier. </p><p>The multiplier represents a percentage (as a number out of 100). For example:</p><ul><li>multiplier: 120 means 120% of the original estimate (20% increase)</li><li>multiplier: 150 means 150% of the original estimate (50% increase)</li></ul></td></tr><tr><td>account</td><td><a href="https://app.gitbook.com/o/FkM3zqPi1O0VypWXgiUZ/s/wX9Yl8DLygpenDBVWGPF/~/changes/1/references/account">Account</a></td><td>❌</td><td>If provided, it will perform balance checks on the specified account; otherwise, it will skip balance checks.</td></tr></tbody></table>
 
 #### Returns: [PreparedPurchase](https://manifoldxyz.gitbook.io/manifold-client-sdk/reference/preparedpurchase)
 
@@ -1339,9 +1339,16 @@ Simulates a purchase to check eligibility and calculate the total cost.
 
 #### Example
 
-<pre class="language-jsx"><code class="lang-jsx">import { createClient, type AppType } from '@manifoldxyz/client-sdk'
+<pre class="language-jsx"><code class="lang-jsx">import { createClient, createPublicProviderViem, type AppType } from '@manifoldxyz/client-sdk'
+import { createPublicClient, http } from 'viem'
+import { mainnet } from 'viem/chains'
 
-const client = createClient();
+const publicClient = createPublicClient({
+  chain: mainnet,
+  transport: http(),
+})
+const publicProvider = createPublicProviderViem({ 1: publicClient })
+const client = createClient({ publicProvider });
 
 const product = await client.getProduct('12311232')
 if (product.type !== AppType.Edition) {
@@ -1362,7 +1369,7 @@ try {
   return
 }
 
-console.log('Total cost:', simulation.totalCost.formatted);
+console.log('Total cost:', preparedPurchase.cost.total.formatted);
 </code></pre>
 
 [**Errors**](https://www.notion.so/Manifold-Client-SDK-Complete-Developer-Guide-2676b055ee58800abc38ccd30cdfca70?pvs=21)
@@ -1459,16 +1466,23 @@ Simulates purchase to check eligibility and get total cost.
 
 #### Parameters
 
-<table><thead><tr><th width="181.0078125">Parameter</th><th width="168.01171875">Type</th><th width="107.44140625">Required</th><th>Description</th></tr></thead><tbody><tr><td>userAddress</td><td>string</td><td>✅</td><td>The address making the purchase</td></tr><tr><td>recipientAddress</td><td>string</td><td>❌</td><td>If different than <code>address</code></td></tr><tr><td>networkId</td><td>number</td><td>❌</td><td>If specify, forced transaction on the network (handle funds bridging automatically), assume product network otherwise</td></tr><tr><td>payload</td><td>{quantity: number}</td><td>✅</td><td>Specific to Edition Products. Specify quantity of purchase</td></tr><tr><td><strong>gasBuffer</strong></td><td>object</td><td>❌</td><td>How much additional gas to spend on the purchase</td></tr><tr><td>gasBuffer.fixed</td><td>BigInt</td><td>❌</td><td>Fixed gas buffer amount</td></tr><tr><td>gasBuffer.multipller</td><td>number</td><td>❌</td><td><p></p><p>Gas buffer by multiplier. </p><p>The multiplier represents a percentage (as a number out of 100). For example:</p><ul><li>multiplier: 120 means 120% of the original estimate (20% increase)</li><li>multiplier: 150 means 150% of the original estimate (50% increase)</li></ul></td></tr><tr><td>account</td><td><a href="../../../reference/account">Account</a></td><td>❌</td><td>If provided, it will perform balance checks on the specified account; otherwise, it will skip balance checks.</td></tr></tbody></table>
+<table><thead><tr><th width="181.0078125">Parameter</th><th width="168.01171875">Type</th><th width="107.44140625">Required</th><th>Description</th></tr></thead><tbody><tr><td>userAddress</td><td>string</td><td>✅</td><td>The address making the purchase</td></tr><tr><td>recipientAddress</td><td>string</td><td>❌</td><td>If different than <code>address</code></td></tr><tr><td>networkId</td><td>number</td><td>❌</td><td>If specify, forced transaction on the network (handle funds bridging automatically), assume product network otherwise</td></tr><tr><td>payload</td><td>{quantity: number}</td><td>✅</td><td>Specific to Blind Mint Products. Specify quantity of purchase</td></tr><tr><td><strong>gasBuffer</strong></td><td>object</td><td>❌</td><td>How much additional gas to spend on the purchase</td></tr><tr><td>gasBuffer.fixed</td><td>BigInt</td><td>❌</td><td>Fixed gas buffer amount</td></tr><tr><td>gasBuffer.multiplier</td><td>number</td><td>❌</td><td><p></p><p>Gas buffer by multiplier. </p><p>The multiplier represents a percentage (as a number out of 100). For example:</p><ul><li>multiplier: 120 means 120% of the original estimate (20% increase)</li><li>multiplier: 150 means 150% of the original estimate (50% increase)</li></ul></td></tr><tr><td>account</td><td><a href="../../../reference/account">Account</a></td><td>❌</td><td>If provided, it will perform balance checks on the specified account; otherwise, it will skip balance checks.</td></tr></tbody></table>
 
 #### Returns: [PreparedPurchase](https://www.notion.so/Manifold-Client-SDK-Complete-Developer-Guide-2676b055ee58800abc38ccd30cdfca70?pvs=21)
 
 #### Example
 
 ```jsx
-import { createClient, type AppType, isBlindMintProduct } from '@manifoldxyz/client-sdk'
+import { createClient, createPublicProviderViem, isBlindMintProduct } from '@manifoldxyz/client-sdk'
+import { createPublicClient, http } from 'viem'
+import { mainnet } from 'viem/chains'
 
-const client = createClient();
+const publicClient = createPublicClient({
+  chain: mainnet,
+  transport: http(),
+})
+const publicProvider = createPublicProviderViem({ 1: publicClient })
+const client = createClient({ publicProvider });
 
 const product = await client.getProduct('12311232')
 if (!isBlindMintProduct(product)) {
@@ -1489,7 +1503,7 @@ try {
   return
 }
 
-console.log('Total cost:', simulation.totalCost.formatted);
+console.log('Total cost:', preparedPurchase.cost.total.formatted);
 ```
 
 [**Errors**](https://www.notion.so/Manifold-Client-SDK-Complete-Developer-Guide-2676b055ee58800abc38ccd30cdfca70?pvs=21)
@@ -2615,11 +2629,11 @@ Represents a minted token (or group of tokens) within a purchase order.
 
 Base error class with typed error codes.
 
-| Field    | Type   | Required |
-| -------- | ------ | -------- |
-| code     | number | ✅        |
-| message  | string | ❌        |
-| metadata | object | ❌        |
+| Field   | Type   | Required |
+| ------- | ------ | -------- |
+| code    | string | ✅        |
+| message | string | ✅        |
+| details | object | ❌        |
 
 **Error Codes**
 
@@ -2631,7 +2645,7 @@ Base error class with typed error codes.
 | NOT\_FOUND            | Resource not found                                                                                                  |
 | INVALID\_INPUT        | Invalid parameters                                                                                                  |
 | MISSING\_TOKENS       | Missing required tokens to purchase                                                                                 |
-| UNSUPPORTED\_TYPE     | Unsupported product type (Only support the following types: AppType.Edition, AppType.BurnRedeem, AppType.BlindMInt) |
+| UNSUPPORTED\_TYPE     | Unsupported product type (Only support the following types: AppType.Edition, AppType.BlindMint) |
 | **Blockchain Errors** |                                                                                                                     |
 | ESTIMATION\_FAILED    | Can’t estimate gas                                                                                                  |
 | TRANSACTION\_FAILED   | Transaction reverted                                                                                                |

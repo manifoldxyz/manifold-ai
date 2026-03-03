@@ -116,7 +116,7 @@ const publicProvider = createPublicProviderEthers5({
 
 ```typescript
 interface IAccount {
-  readonly adapterType: 'ethers5' | 'ethers6' | 'viem' | 'wagmi';
+  readonly adapterType: 'ethers5' | 'viem' | 'wagmi';
   getAddress(): Promise<string>;
   sendTransaction(request: UniversalTransactionRequest): Promise<string>;
   sendTransactionWithConfirmation(
