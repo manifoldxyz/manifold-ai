@@ -21,17 +21,17 @@ import { base } from 'viem/chains';
 const publicProvider = createPublicProviderViem({
   [base.id]: createPublicClient({
     chain: base,
-    transport: http('YOUR_RPC'), // or http() for public RPC
+    transport: http(process.env.RPC_URL!), // or http() for public RPC
   }),
 });
 const client = createClient({ publicProvider });
 
 // Account: from private key or browser wallet
-const wallet = privateKeyToAccount('0xPRIVATE_KEY' as `0x${string}`);
+const wallet = privateKeyToAccount(process.env.WALLET_PRIVATE_KEY! as `0x${string}`);
 const walletClient = createWalletClient({
   account: wallet,
   chain: base,
-  transport: http('YOUR_RPC'), // or http() for public RPC
+  transport: http(process.env.RPC_URL!), // or http() for public RPC
 });
 const account = createAccountViem({ walletClient });
 ```
@@ -62,8 +62,8 @@ const account = createAccountViem({ walletClient });
 const config = createConfig({
   chains: [mainnet, base],
   transports: {
-    [mainnet.id]: http('YOUR_MAINNET_RPC'), // or http() for public RPC
-    [base.id]: http('YOUR_BASE_RPC'),       // or http() for public RPC
+    [mainnet.id]: http(process.env.RPC_URL_MAINNET!), // or http() for public RPC
+    [base.id]: http(process.env.RPC_URL_BASE!),       // or http() for public RPC
   },
 });
 ```
@@ -75,12 +75,12 @@ import { createClient, createPublicProviderEthers5, createAccountEthers5 } from 
 import { ethers } from 'ethers';
 
 // Provider: pass Record<chainId, Provider>
-const provider = new ethers.providers.JsonRpcProvider('YOUR_RPC');
+const provider = new ethers.providers.JsonRpcProvider(process.env.RPC_URL!);
 const publicProvider = createPublicProviderEthers5({ 1: provider });
 const client = createClient({ publicProvider });
 
 // Account: from private key or browser signer
-const wallet = new ethers.Wallet('YOUR_PRIVATE_KEY', provider);
+const wallet = new ethers.Wallet(process.env.WALLET_PRIVATE_KEY!, provider);
 const account = createAccountEthers5({ wallet });
 ```
 

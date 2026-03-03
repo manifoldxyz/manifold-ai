@@ -84,6 +84,19 @@ cost.total.native.isPositive() // true
 cost.total.native.isERC20()    // false
 ```
 
+## Confirmation Before Execution
+
+**Always display cost and get user confirmation before executing a purchase.** After `preparePurchase` returns, show the cost details and wait for explicit approval:
+
+```typescript
+// Display cost details to the user
+console.log(`Cost: ${prepared.cost.total.native.formatted}`);
+console.log(`Network: ${networkId} | Quantity: ${quantity}`);
+// Agent must confirm with user before proceeding
+```
+
+Do not call `purchase()` or `step.execute()` until the user has confirmed.
+
 ## Step 2: Execute Purchase
 
 ### Simple: Use `product.purchase()`
@@ -125,6 +138,7 @@ See `references/transaction-steps.md` for details.
 ## Complete Example
 
 ```typescript
+import 'dotenv/config';
 import {
   createClient,
   createAccountViem,
@@ -136,23 +150,23 @@ import { privateKeyToAccount } from 'viem/accounts';
 import { base } from 'viem/chains';
 
 // Setup
-const publicClient = createPublicClient({ chain: base, transport: http(RPC_URL) });
+const publicClient = createPublicClient({ chain: base, transport: http(process.env.RPC_URL!) });
 const publicProvider = createPublicProviderViem({ [base.id]: publicClient });
 const client = createClient({ publicProvider });
 
 // Fetch & validate
-const product = await client.getProduct(INSTANCE_ID);
+const product = await client.getProduct(process.env.INSTANCE_ID!);
 if (!isEditionProduct(product)) throw new Error('Not an edition');
 
 const status = await product.getStatus();
 if (status !== 'active') throw new Error(`Product is ${status}`);
 
 // Create account
-const wallet = privateKeyToAccount(PRIVATE_KEY as `0x${string}`);
+const wallet = privateKeyToAccount(process.env.WALLET_PRIVATE_KEY! as `0x${string}`);
 const walletClient = createWalletClient({
   account: wallet,
   chain: base,
-  transport: http(RPC_URL),
+  transport: http(process.env.RPC_URL!),
 });
 const account = createAccountViem({ walletClient });
 const address = await account.getAddress();

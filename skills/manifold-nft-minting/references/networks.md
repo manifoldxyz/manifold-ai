@@ -129,7 +129,7 @@ Always test on Sepolia first:
 const publicProvider = createPublicProviderViem({
   11155111: createPublicClient({
     chain: sepolia,
-    transport: http('YOUR_SEPOLIA_RPC'),
+    transport: http(process.env.RPC_URL_SEPOLIA!),
   }),
 });
 ```

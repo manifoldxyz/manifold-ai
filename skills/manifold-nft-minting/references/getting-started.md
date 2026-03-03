@@ -35,13 +35,14 @@ const client = createClient({ publicProvider });
 #### With Viem (recommended)
 
 ```typescript
+import 'dotenv/config';
 import { createClient, createPublicProviderViem } from '@manifoldxyz/client-sdk';
 import { createPublicClient, http } from 'viem';
 import { mainnet } from 'viem/chains';
 
 const publicClient = createPublicClient({
   chain: mainnet,
-  transport: http('YOUR_RPC_URL'),
+  transport: http(process.env.RPC_URL!),
   // Or use public RPC (rate-limited): transport: http()
 });
 
@@ -61,8 +62,8 @@ import { mainnet, base } from '@wagmi/core/chains';
 const config = createConfig({
   chains: [mainnet, base],
   transports: {
-    [mainnet.id]: http('YOUR_MAINNET_RPC_URL'),
-    [base.id]: http('YOUR_BASE_RPC_URL'),
+    [mainnet.id]: http(process.env.RPC_URL_MAINNET!),
+    [base.id]: http(process.env.RPC_URL_BASE!),
     // Or use public RPC (rate-limited): http()
   },
 });
@@ -77,7 +78,7 @@ const client = createClient({ publicProvider });
 import { createClient, createPublicProviderEthers5 } from '@manifoldxyz/client-sdk';
 import { ethers } from 'ethers';
 
-const provider = new ethers.providers.JsonRpcProvider('YOUR_RPC_URL');
+const provider = new ethers.providers.JsonRpcProvider(process.env.RPC_URL!);
 const publicProvider = createPublicProviderEthers5({ 1: provider });
 const client = createClient({ publicProvider });
 ```
@@ -104,7 +105,7 @@ import { mainnet } from '@wagmi/core/chains';
 
 const config = createConfig({
   chains: [mainnet],
-  transports: { [mainnet.id]: http('YOUR_RPC_URL') },
+  transports: { [mainnet.id]: http(process.env.RPC_URL!) },
 });
 
 const client = createClient({

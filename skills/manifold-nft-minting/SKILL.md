@@ -22,6 +22,8 @@ Load lazily — only when the current step needs them. **Never load all at once.
 | `error-handling.md` | Error codes, pitfalls — **always load before writing purchase code** |
 | `networks.md` | Multi-chain setup or non-mainnet deployments |
 | `react-minting-app.md` | Building a React/Next.js minting page |
+| `rainbowkit-setup.md` | RainbowKit installation, wagmi config, ConnectButton, providers |
+| `rpc-setup-guide.md` | Setting up an RPC provider (Alchemy/Infura/QuickNode) |
 | `minting-bot.md` | Building a headless minting bot |
 | `studio-setup-guide.md` | User needs to create a Manifold campaign first |
 | `full-docs.md` | Fallback only — 128KB complete SDK docs with TOC for grep |
@@ -59,26 +61,22 @@ Ask: **"Do you have an existing project to add minting to, or building from scra
 Ask: **"Would you like to use [RainbowKit](https://www.rainbowkit.com/) for wallet connection? It's the most common choice for React/Next.js minting apps."**
 
 **RainbowKit (yes):**
-1. Use `WebFetch` to read RainbowKit documentation before writing any code:
-   - `https://rainbowkit.com/docs/installation`
-   - `https://rainbowkit.com/docs/connect-button`
-2. Read `references/react-minting-app.md` + `references/getting-started.md` + `references/networks.md` + `references/adapters.md`
-3. Follow RainbowKit's setup patterns for wagmi config, providers, and `<ConnectButton />`
+1. Read `references/rainbowkit-setup.md` + `references/react-minting-app.md` + `references/getting-started.md` + `references/networks.md` + `references/adapters.md`
+2. Follow RainbowKit's setup patterns for wagmi config, providers, and `<ConnectButton />`
 
 **Other library (no):**
 1. Ask: **"Which wallet connection library would you like to use?"** (e.g., Web3Modal, ConnectKit, Dynamic, Privy, custom)
-2. Ask: **"Can you provide the documentation URL for that library so I can follow it correctly?"**
-3. Use `WebFetch` to read their provided documentation URL
-4. Read `references/getting-started.md` + `references/networks.md` + `references/adapters.md`
-5. Adapt the SDK integration to work with their chosen wallet library instead of RainbowKit
+2. Ask the user to describe their library's provider/config pattern, then adapt the SDK integration accordingly.
+3. Read `references/getting-started.md` + `references/networks.md` + `references/adapters.md`
+4. Adapt the SDK integration to work with their chosen wallet library instead of RainbowKit
 
 ### Step 2b: RPC node setup
 
 Ask: **"Do you have an RPC node URL you can provide (e.g., from Alchemy, Infura, QuickNode)?"**
 
-**Yes** → Use their RPC URL in configuration. Proceed to Step 3.
+**Yes** → Store the RPC URL in a `.env` file and reference via `process.env.*` in configuration. Ensure `.gitignore` includes `.env`. Proceed to Step 3.
 
-**No, but willing to set one up** → Use `WebFetch` to read `https://www.alchemy.com/overviews/rpc-node` and guide them through creating an Alchemy account and getting an RPC endpoint. Proceed to Step 3.
+**No, but willing to set one up** → Read `references/rpc-setup-guide.md` and guide them through creating an Alchemy account and getting an RPC endpoint. Proceed to Step 3.
 
 **No, skip (use public RPC)** → Use viem's built-in public transport. In code, use `http()` with no URL argument:
 
@@ -109,10 +107,12 @@ Proceed to Step 3.
 ## Rules
 
 - **When using RainbowKit, ALWAYS install `wagmi@^2.9.0` — NEVER run `npm install wagmi` without the version pin.** The correct command is `npm install wagmi@^2.9.0` (or `yarn add wagmi@^2.9.0` / `pnpm add wagmi@^2.9.0`). Running `npm install wagmi` or `npm install wagmi@latest` will install wagmi 3.x, which is incompatible with RainbowKit and will cause build/runtime errors. This is the #1 mistake agents make — always include the `@^2.9.0` version specifier.
+- **Always use environment variables for RPC URLs and private keys** — generate `.env` files for secrets and ensure `.gitignore` includes `.env`. Never inline credentials in source code. Reference values via `process.env.*` (e.g., `process.env.RPC_URL!`, `process.env.WALLET_PRIVATE_KEY!`).
+- **Always display cost and confirm before executing transactions.** Before calling `purchase()` or `step.execute()`, display the total cost (`prepared.cost.total.native.formatted`), network, and quantity to the user and ask for explicit confirmation.
 - **Prefer viem over ethers** for new projects. Only use ethers v5 if the user explicitly requests it or has an existing ethers codebase.
 - **Never fabricate SDK method signatures or field names.** Verify against references.
 - **Always confirm wallet connection choice** before scaffolding a web minting app. Never assume RainbowKit.
-- **Always read wallet library docs** before writing integration code — RainbowKit docs via WebFetch, or user-provided docs for other libraries.
+- **Always read wallet library docs** before writing integration code — read `references/rainbowkit-setup.md` for RainbowKit, or ask the user to describe their library's config pattern for other libraries.
 - **Always use type guards** before accessing product-specific methods.
 - **Always check `getStatus()`** before purchases.
 - **Use `preparePurchase` → `purchase`** for simple flows. Manual `step.execute()` only for granular UI control.

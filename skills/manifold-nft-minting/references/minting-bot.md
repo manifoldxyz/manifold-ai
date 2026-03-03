@@ -68,12 +68,27 @@ async function main() {
   const alloc = await product.getAllocations({ recipientAddress: address });
   if (!alloc.isEligible) throw new Error(alloc.reason || 'Not eligible');
 
-  // Prepare + execute
+  // Prepare
   const prepared = await product.preparePurchase({
     userAddress: address, payload: { quantity }, account,
   });
-  console.log(`Cost: ${prepared.cost.total.native.formatted}`);
 
+  // Confirm before executing
+  console.log(`\nReady to mint:`);
+  console.log(`  Cost: ${prepared.cost.total.native.formatted}`);
+  console.log(`  Network: ${networkId} | Quantity: ${quantity}`);
+  const readline = await import('readline');
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  const answer = await new Promise<string>((resolve) =>
+    rl.question('Proceed with purchase? (yes/no): ', resolve)
+  );
+  rl.close();
+  if (answer.toLowerCase() !== 'yes') {
+    console.log('Purchase cancelled.');
+    process.exit(0);
+  }
+
+  // Execute
   const result = await product.purchase({ account, preparedPurchase: prepared });
   console.log(`TX: ${result.transactionReceipt.txHash}`);
 
