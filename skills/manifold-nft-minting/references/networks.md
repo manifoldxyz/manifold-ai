@@ -40,6 +40,8 @@ const publicProviderPublic = createPublicProviderViem({
 
 ### Wagmi (React apps)
 
+> **CRITICAL: When using RainbowKit, ALWAYS install `wagmi@^2.9.0`.** Do NOT run `npm install wagmi` or `npm install wagmi@latest` — this will install wagmi 3.x, which is incompatible with RainbowKit. The correct command is: `npm install wagmi@^2.9.0`
+
 ```typescript
 import { createConfig, http } from '@wagmi/core';
 import { mainnet, base, optimism, sepolia } from '@wagmi/core/chains';

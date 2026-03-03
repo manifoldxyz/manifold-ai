@@ -8,7 +8,7 @@ Build a minting page with Next.js + RainbowKit + wagmi.
 
 ## Dependencies
 
-> **CRITICAL: RainbowKit requires wagmi 2.x.** Do NOT install wagmi 3.x — it is incompatible with RainbowKit. Always pin `wagmi@^2.9.0`.
+> **CRITICAL: ALWAYS install `wagmi@^2.9.0` — NEVER run `npm install wagmi` without the version pin.** Running `npm install wagmi` or `npm install wagmi@latest` will install wagmi 3.x, which is incompatible with RainbowKit. The correct command is shown below.
 
 ```bash
 npm install @manifoldxyz/client-sdk @rainbow-me/rainbowkit wagmi@^2.9.0 viem @tanstack/react-query

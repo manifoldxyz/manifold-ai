@@ -38,7 +38,7 @@ const account = createAccountViem({ walletClient });
 
 ### Wagmi (React apps with wallet connection libraries)
 
-> **Important:** If using RainbowKit, you must use wagmi 2.x (`wagmi@^2.9.0`). wagmi 3.x is NOT compatible with RainbowKit.
+> **CRITICAL: When using RainbowKit, ALWAYS install `wagmi@^2.9.0`.** Do NOT run `npm install wagmi` or `npm install wagmi@latest` — this will install wagmi 3.x, which is incompatible with RainbowKit. The correct command is: `npm install wagmi@^2.9.0`
 
 ```typescript
 import { createClient, createPublicProviderWagmi, createAccountViem } from '@manifoldxyz/client-sdk';

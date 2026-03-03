@@ -108,7 +108,7 @@ Proceed to Step 3.
 
 ## Rules
 
-- **RainbowKit requires wagmi 2.x (NOT 3.x).** When using RainbowKit, always install `wagmi@^2.9.0`. wagmi 3.x is incompatible with RainbowKit and will cause build/runtime errors. This is critical — never install wagmi without pinning to `^2.9.0` in RainbowKit projects.
+- **When using RainbowKit, ALWAYS install `wagmi@^2.9.0` — NEVER run `npm install wagmi` without the version pin.** The correct command is `npm install wagmi@^2.9.0` (or `yarn add wagmi@^2.9.0` / `pnpm add wagmi@^2.9.0`). Running `npm install wagmi` or `npm install wagmi@latest` will install wagmi 3.x, which is incompatible with RainbowKit and will cause build/runtime errors. This is the #1 mistake agents make — always include the `@^2.9.0` version specifier.
 - **Prefer viem over ethers** for new projects. Only use ethers v5 if the user explicitly requests it or has an existing ethers codebase.
 - **Never fabricate SDK method signatures or field names.** Verify against references.
 - **Always confirm wallet connection choice** before scaffolding a web minting app. Never assume RainbowKit.
