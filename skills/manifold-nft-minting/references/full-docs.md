@@ -343,8 +343,9 @@ const product = await client.getProduct(instanceId);
 
 // Off-chain media and metadata (safe to render immediately)
 const { asset, title, contract } = product.data.publicData;
-const imageUrl = asset.image ?? asset.imagePreview;
-const animationUrl = asset.animation ?? asset.animationPreview;
+const media = await product.getPreviewMedia();
+const imageUrl = media?.image;
+const animationUrl = media?.animation;
 
 // Fetch on-chain data once (cost, supply, timing)
 const onchainData = await product.fetchOnchainData();
@@ -2619,10 +2620,10 @@ Represents a minted token (or group of tokens) within a purchase order.
 | name             | string | ✅        |                                      |
 | description      | string | ❌        |                                      |
 | attributes       | object | ❌        | Extra attributes (key/value)         |
-| image            | string | ✅        | Image url of the product             |
-| imagePreview     | string | ❌        | Preview image url of the product     |
-| animation        | string | ❌        | Animation url of the product         |
-| animationPreview | string | ❌        | Animation preview url of the product |
+| image             | string | ✅        | Optimized preview image url of the product              |
+| animation         | string | ❌        | Optimized preview animation url of the product          |
+| originalImage     | string | ❌        | Original full-resolution image url of the product       |
+| originalAnimation | string | ❌        | Original full-resolution animation url of the product   |
 
 
 # ClientSDKError

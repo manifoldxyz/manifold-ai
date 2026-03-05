@@ -144,19 +144,19 @@ Get product media URLs.
 
 ```typescript
 const media = await product.getPreviewMedia();
-console.log(`Image: ${media?.image}`);
-console.log(`Preview: ${media?.imagePreview}`);
-console.log(`Animation: ${media?.animation}`);
+console.log(`Image: ${media?.image}`);           // optimized preview
+console.log(`Animation: ${media?.animation}`);   // optimized preview
+console.log(`Original: ${media?.originalImage}`); // full-resolution
 ```
 
 **Returns:**
 
 ```typescript
 interface Media {
-  image?: string;
-  imagePreview?: string;
-  animation?: string;
-  animationPreview?: string;
+  image?: string;             // optimized preview (image_preview/thumbnail, falling back to original)
+  animation?: string;         // optimized preview (animation_preview, falling back to original)
+  originalImage?: string;     // original full-resolution image
+  originalAnimation?: string; // original full-resolution animation
 }
 ```
 
